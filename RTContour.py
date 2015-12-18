@@ -10,28 +10,29 @@ cap = cv2.VideoCapture(0)
 # ret, sfondo = cap.read()
 
 cv2.namedWindow('frame')
-cv2.createTrackbar('a', 'frame', 0, 255, nothing)
-# cv2.createTrackbar('b', 'frame', 0, 100, nothing)
+cv2.createTrackbar('Blur', 'frame', 1, 50, nothing)
+cv2.createTrackbar('Cont', 'frame', 0, 50, nothing)
 
 while True:
-    # if cv2.waitKey(1) & 0xFF == ord('a'):
-    #     ret, sfondo = cap.read()
 
     ret, frame = cap.read()
 
-    # sfondoG = cv2.cvtColor(sfondo, cv2.COLOR_BGR2GRAY)
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    # frame = cv2.bitwise_not(frame)
+    frameG = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-    val1 = cv2.getTrackbarPos('a', 'frame')
-    # val2 = cv2.getTrackbarPos('b', 'frame')
+    val1 = cv2.getTrackbarPos('Blur', 'frame')*2 + 1
 
-    # retval, thresh1 = cv2.threshold(frame, val1, 255, cv2.THRESH_BINARY)
-    thresh1 = cv2.adaptiveThreshold(frame, val1, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 5, 4)
+    frameG = cv2.GaussianBlur(frameG, (val1, val1), 0)
 
-    # mask = cv2.bitwise_or(sfondoG,  frameG)
+    ret1, thresh1 = cv2.threshold(frameG, 127, 255, 0)
 
-    cv2.imshow('frame', thresh1)
+    img, conto, hier = cv2.findContours(thresh1, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+    val2 = cv2.getTrackbarPos('Cont', 'frame')
+    if val2 >= len(conto):
+        val2 -= len(conto)
+
+    cv2.drawContours(frameG, conto, val2, (0, 255, 0), 3)
+    cv2.imshow('frame', frameG)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
